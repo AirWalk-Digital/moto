@@ -10,7 +10,7 @@ from moto import mock_inspector
 from moto.core import ACCOUNT_ID
 
 @mock_inspector
-def test_create_resource_group():
+def test_create_assessment_target():
     conn = boto3.client("inspector", region_name="us-east-1")
     resource_group_tags = {
         'resourceGroupTags': [
@@ -21,4 +21,9 @@ def test_create_resource_group():
             ]
     }
     resource_group = conn.create_resource_group(**resource_group_tags)
-    resource_group['resourceGroupArn'].should.match(f'arn:aws:inspector:us-east-1:{ACCOUNT_ID}:resourcegroup/0-')
+    target = conn.create_assessment_target(assessmentTargetName='test', resourceGroupArn=resource_group['resourceGroupArn'])
+    target['assessmentTargetArn'].should.match(f'arn:aws:inspector:us-east-1:{ACCOUNT_ID}:target/0-')
+
+    targets = conn.list_assessment_targets()
+    targets['assessmentTargetArns'].should.have.length_of(1)
+

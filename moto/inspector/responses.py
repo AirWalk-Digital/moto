@@ -17,7 +17,7 @@ class InspectorResponse(BaseResponse):
         return inspector_backends[self.region]
 
     def create_assessment_target(self):
-        name = self._get_param('Name')
+        name = self._get_param('assessmentTargetName')
         resource_group_arn = self._get_param('resourceGroupArn')
         target = self.backend.create_assessment_target(name, resource_group_arn)
 
@@ -27,7 +27,7 @@ class InspectorResponse(BaseResponse):
         filter = self._get_param('Filter')
         targets = self.backend.list_assessment_targets(filter=filter)
 
-        return json.dumps({'assessmentTargetArns': targets.arn})
+        return json.dumps({'assessmentTargetArns': targets})
 
     def create_assessment_template(self):
         assessment_target_arn = self._get_param('assessmentTargetArn')
