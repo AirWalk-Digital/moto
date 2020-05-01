@@ -25,7 +25,6 @@ def test_start_assessment_run():
 
     template = conn.create_assessment_template(assessmentTargetArn=target['assessmentTargetArn'], assessmentTemplateName='test', durationInSeconds=900, rulesPackageArns=['rule-arn'])
     assessment_run = conn.start_assessment_run(assessmentTemplateArn=template['assessmentTemplateArn'], assessmentRunName='test')
-    # print(conn.list_assessment_runs(assessmentTemplateArns=[template['assessmentTemplateArn']]))
     conn.list_assessment_runs(assessmentTemplateArns=[template['assessmentTemplateArn']])
     assessment_run['assessmentRunArn'].should.match(f"{template['assessmentTemplateArn']}/run/0-")
 
