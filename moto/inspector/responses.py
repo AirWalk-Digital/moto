@@ -41,13 +41,27 @@ class InspectorResponse(BaseResponse):
 
     def list_assessment_templates(self):
         assessment_target_arns = self._get_param('assessmentTargetArns')
-        filter = self._get_param('Filter')
+        filter = self._get_param('filter')
         templates = self.backend.list_assessment_templates(assessment_target_arns, filter)
 
-        return json.dumps({'assessmentTemplateArns': templates})
+        return json.dumps({'assessmentTemplateArns': [template for template in templates]})
 
     def create_resource_group(self):
         resource_group_tags = self._get_param('resourceGroupTags')
         resource_group = self.backend.create_resource_group(resource_group_tags)
 
         return json.dumps({'resourceGroupArn': resource_group.arn})
+
+    def start_assessment_run(self):
+        assessment_template_run_arn = self._get_param('assessmentTemplateArn')
+        assessment_run_name = self._get_param('assessmentRunName')
+        assessment_run = self.backend.start_assessment_run(assessment_template_run_arn, assessment_run_name)
+        
+        return json.dumps({'assessmentRunArn': assessment_run.arn})
+
+    def list_assessment_runs(self):
+        assessment_template_arns = self._get_param('assessmentTemplateArns')
+        filter = self._get_param('filter')
+        assessment_runs = self.backend.list_assessment_runs(assessment_template_arns, filter)
+
+        return json.dumps({'assessmentRunArns': assessment_runs})
