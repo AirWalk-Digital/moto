@@ -6,9 +6,6 @@ from collections import defaultdict
 from moto.core.responses import BaseResponse
 from moto.core.utils import camelcase_to_underscores
 from .models import inspector_backends
-# from .exceptions import SNSNotFoundError, InvalidParameterValue
-# from .utils import is_e164
-
 
 class InspectorResponse(BaseResponse):
 
@@ -65,3 +62,40 @@ class InspectorResponse(BaseResponse):
         assessment_runs = self.backend.list_assessment_runs(assessment_template_arns, filter)
 
         return json.dumps({'assessmentRunArns': assessment_runs})
+
+    def subscribe_to_event(self):
+        resource_arn = self._get_param('resourceArn')
+        event = self._get_param('event')
+        topic_arn = self._get_param('topicArn')
+        self.backend.subscribe_to_event(resource_arn, event, topic_arn)
+        template = self.response_template(SUBSCRIBE_TO_EVENT_TEMPLATE)
+        return template.render()
+
+    def list_rules_packages(self):
+        rules_packages = self.backend.list_rules_packages()
+        return json.dumps({'rulesPackageArns': rules_packages})
+
+    def list_findings(self):
+        assessment_run_arns = self._get_param('assessmentRunArns')
+        filter = self._get_param('filter')
+        assessment_findings = self.backend.list_findings(assessment_run_arns, filter)
+
+        return json.dumps({'findingArns': assessment_findings})
+
+    def describe_findings(self):
+        finding_arns = self._get_param('findingArns')
+        findings = self.backend.describe_findings(finding_arns)
+
+        return json.dumps({'findings': findings})
+
+    def list_exclusions(self):
+        pass
+
+    def describe_exclusions(self):
+        pass
+
+SUBSCRIBE_TO_EVENT_TEMPLATE = """<AddPermissionResponse xmlns="http://inspector.amazonaws.com/doc/2010-03-31/">
+  <ResponseMetadata>
+    <RequestId>c046e713-c5ff-5888-a7bc-b52f0e4f1299</RequestId>
+  </ResponseMetadata>
+</AddPermissionResponse>"""

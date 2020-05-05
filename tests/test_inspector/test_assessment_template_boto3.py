@@ -154,3 +154,43 @@ def test_list_assessment_template_with_multiple_matches():
     template_results = conn.list_assessment_templates(assessmentTargetArns=[target['assessmentTargetArn']], filter={'rulesPackageArns': ['rule-arn'], 'durationRange': {'minSeconds': 800, 'maxSeconds': 1000}})
     template_results['assessmentTemplateArns'][0].should.match(f"{target['assessmentTargetArn']}/template/0-")
     template_results['assessmentTemplateArns'].should.have.length_of(2)
+
+@mock_inspector
+def test_subscribe_to_event():
+    conn = boto3.client("inspector", region_name="us-east-1")
+    resource_group_tags = {
+        'resourceGroupTags': [
+                {
+                    'key':'test',
+                    'value': 'True'
+                }
+            ]
+    }
+    resource_group = conn.create_resource_group(**resource_group_tags)
+    target = conn.create_assessment_target(assessmentTargetName='test', resourceGroupArn=resource_group['resourceGroupArn'])
+    template = conn.create_assessment_template(assessmentTargetArn=target['assessmentTargetArn'], assessmentTemplateName='test', durationInSeconds=900, rulesPackageArns=['rule-arn'])
+    conn.subscribe_to_event(resourceArn=template['assessmentTemplateArn'], event='ASSESSMENT_RUN_STARTED', topicArn='topic-arn')
+
+@mock_inspector
+def test_list_assessment_template_no_filter():
+    conn = boto3.client("inspector", region_name="us-east-1")
+    resource_group_tags = {
+        'resourceGroupTags': [
+                {
+                    'key':'test',
+                    'value': 'True'
+                }
+            ]
+    }
+    resource_group = conn.create_resource_group(**resource_group_tags)
+    target = conn.create_assessment_target(assessmentTargetName='test', resourceGroupArn=resource_group['resourceGroupArn'])
+    conn.create_assessment_template(assessmentTargetArn=target['assessmentTargetArn'], assessmentTemplateName='test', durationInSeconds=900, rulesPackageArns=['rule-arn'])
+    template_results = conn.list_assessment_templates()
+    template_results['assessmentTemplateArns'][0].should.match(f"{target['assessmentTargetArn']}/template/0-")
+    template_results['assessmentTemplateArns'].should.have.length_of(1)
+
+@mock_inspector
+def test_list_assessment_template_no_template():
+    conn = boto3.client("inspector", region_name="us-east-1")
+    template_results = conn.list_assessment_templates()
+    template_results['assessmentTemplateArns'].should.have.length_of(0)
